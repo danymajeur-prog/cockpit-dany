@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dany — Espace de travail</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyg7w87mTPgd8-7CWJvLkWV2m0Zsg6uY0",
+    authDomain: "cockpit-dany.firebaseapp.com",
+    databaseURL: "https://cockpit-dany-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cockpit-dany",
+    storageBucket: "cockpit-dany.firebasestorage.app",
+    messagingSenderId: "374771705717",
+    appId: "1:374771705717:web:58ba0604df6b1574cd953c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  // Connexion anonyme automatique
+  firebase.auth().signInAnonymously().catch(function(e){ console.warn('Auth:', e); });
+</script>
+<style>
+:root {
+  --vert:      #7BA89A;
+  --vert-p:    #A8C5BB;
+  --vert-pale: #E8F2EF;
+  --vert-xs:   #F2F7F5;
+  --gris:      #8A9199;
+  --gris-p:    #B8BEC5;
+  --gris-pale: #EEF0F2;
+  --beige:     #F5F2EE;
+  --beige-p:   #EDE8E1;
+  --noir:      #2C2C2C;
+  --blanc:     #FAFAF8;
+  --urgent:    #C0614A;
+  --urgent-p:  #F5E8E5;
+  --prio:      #B08A4A;
+  --prio-p:    #F5EEE0;
+  --import:    #7BA89A;
+  --import-p:  #E8F2EF;
+  --rose:      #C4897A;
+  --rose-p:    #F5EDEB;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--beige);
+  color: var(--noir);
+  min-height: 100vh;
+  font-size: 18px;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--blanc);
+  border-bottom: 1px solid var(--beige-p);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-left { display: flex; flex-direction: column; gap: 1px; }
+.topbar-nom {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--noir);
+}
+.topbar-nom em { font-style: italic; color: var(--vert); }
+.topbar-sub { font-size: 16px; color: var(--gris-p); letter-spacing: 2px; text-transform: uppercase; }
+
+/* Horloge */
+.horloge {
+  text-align: right;
+}
+.horloge-h {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 72px;
+  font-weight: 300;
+  color: var(--noir);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+.horloge-date {
+  font-size: 14px;
+  color: var(--gris);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ── ONGLETS ── */
+.onglets-nav {
+  background: var(--blanc);
+  border-bottom: 1px solid var(--beige-p);
+  padding: 0 32px;
+  display: flex;
+  gap: 0;
+  position: sticky;
+  top: 64px;
+  z-index: 90;
+}
+.onglet-btn {
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: var(--gris);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all .2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.onglet-btn:hover { color: var(--vert); }
+.onglet-btn.active { color: var(--vert); border-bottom-color: var(--vert); }
+.onglet-section { display: none; }
+.onglet-section.active { display: block; }
+
+/* ── MAIN ── */
+.main { padding: 32px; max-width: 1200px; margin: 0 auto; }
+
+.salut {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 72px;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: 4px;
+  color: var(--noir);
+}
+.salut em { font-style: italic; color: var(--vert); }
+.salut-sous {
+  font-size: 16px;
+  color: var(--gris);
+  letter-spacing: 1px;
+  margin-bottom: 32px;
+  font-weight: 300;
+}
+
+/* ── GRID ── */
+.grid-main { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.grid-bas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--blanc);
+  border-radius: 12px;
+  border: 1px solid var(--beige-p);
+  overflow: visible;
+}
+.card-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--gris-pale);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-titre {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--noir);
+  letter-spacing: .5px;
+}
+.card-badge {
+  font-size: 15px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.badge-vert { background: var(--vert-pale); color: var(--vert); }
+.badge-gris { background: var(--gris-pale); color: var(--gris); }
+.badge-urgent { background: var(--urgent-p); color: var(--urgent); }
+.badge-rose { background: var(--rose-p); color: var(--rose); }
+.card-body { padding: 20px 24px; }
+.card { display: flex; flex-direction: column; }
+.card-body { flex: 1; overflow: visible; }
+
+/* ── CALENDRIER ── */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cal-nav-titre {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--noir);
+}
+.cal-nav button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gris);
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color .15s;
+}
+.cal-nav button:hover { color: var(--vert); }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.cal-dow {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--gris-p);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all .15s;
+  color: var(--noir);
+  font-weight: 400;
+  position: relative;
+}
+.cal-day:hover { background: var(--vert-pale); color: var(--vert); }
+.cal-day.empty { cursor: default; }
+.cal-day.empty:hover { background: transparent; }
+.cal-day.today { background: var(--vert); color: #fff; font-weight: 500; }
+.cal-day.today:hover { background: var(--vert); }
+.cal-day.has-event::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--rose);
+}
+.cal-day.today.has-event::after { background: #fff; }
+.cal-day.we { color: var(--gris-p); }
+
+/* Événements du calendrier */
+.cal-events {
+  margin-top: 14px;
+  border-top: 1px solid var(--gris-pale);
+  padding-top: 12px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.cal-event-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--gris-pale);
+  cursor: pointer;
+}
+.cal-event-item:last-child { border-bottom: none; }
+.cal-event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.cal-event-txt { font-size: 16px; color: var(--noir); flex: 1; line-height: 1.4; }
+.cal-event-date { font-size: 16px; color: var(--gris-p); white-space: nowrap; }
+.cal-event-del {
+  background: none; border: none; cursor: pointer;
+  color: var(--gris-p); font-size: 15px; padding: 0 2px;
+  opacity: 0; transition: opacity .1s;
+}
+.cal-event-item:hover .cal-event-del { opacity: 1; }
+
+/* Add event */
+.add-event-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+.add-event-row input, .add-event-row select {
+  padding: 8px 10px;
+  border: 1px solid var(--gris-pale);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--noir);
+  background: var(--blanc);
+  outline: none;
+}
+.add-event-row input { flex: 1; }
+.add-event-row input:focus, .add-event-row select:focus { border-color: var(--vert); }
+.add-event-row button {
+  padding: 8px 14px;
+  background: var(--vert);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: opacity .15s;
+}
+.add-event-row button:hover { opacity: .85; }
+
+/* ── TÂCHES ── */
+.task-groupe { margin-bottom: 16px; }
+.task-groupe:last-child { margin-bottom: 0; }
+.task-groupe-titre {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tg-urgent { color: var(--urgent); }
+.tg-prio { color: var(--prio); }
+.tg-import { color: var(--vert); }
+.task-ligne {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gris-pale);
+  cursor: pointer;
+  transition: background .1s;
+  border-radius: 4px;
+  padding-left: 4px;
+}
+.task-ligne:last-child { border-bottom: none; }
+.task-ligne:hover { background: var(--vert-xs); }
+.task-ligne.done .task-texte { text-decoration: line-through; color: var(--gris-p); }
+.task-check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gris-pale);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  background: #fff;
+}
+.task-check.done-u { background: var(--urgent); border-color: var(--urgent); }
+.task-check.done-p { background: var(--prio); border-color: var(--prio); }
+.task-check.done-i { background: var(--vert); border-color: var(--vert); }
+.task-check.done-u::after,
+.task-check.done-p::after,
+.task-check.done-i::after {
+  content: '';
+  width: 7px; height: 4px;
+  border-left: 1.5px solid #fff;
+  border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
+}
+.task-texte { flex: 1; font-size: 18px; color: var(--noir); line-height: 1.4; }
+.task-del {
+  background: none; border: none; cursor: pointer;
+  color: var(--gris-pale); font-size: 16px; padding: 0 3px;
+  opacity: 0; transition: opacity .1s;
+}
+.task-ligne:hover .task-del { opacity: 1; }
+
+/* Add task */
+.add-task-zone {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--gris-pale);
+  display: flex;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+}
+.add-task-zone input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--gris-pale);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--noir);
+  background: var(--blanc);
+  outline: none;
+}
+.add-task-zone input:focus { border-color: var(--vert); }
+.add-task-zone select {
+  padding: 8px 10px;
+  border: 1px solid var(--gris-pale);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--noir);
+  background: var(--blanc);
+  outline: none;
+  cursor: pointer;
+}
+.add-task-zone button {
+  padding: 8px 14px;
+  background: var(--vert);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: opacity .15s;
+}
+.add-task-zone button:hover { opacity: .85; }
+
+/* ── SPECTACLES ── */
+.spec-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--gris-pale);
+}
+.spec-item:last-child { border-bottom: none; }
+.spec-date {
+  font-size: 14px;
+  color: var(--gris);
+  min-width: 52px;
+  flex-shrink: 0;
+  padding-top: 2px;
+  font-weight: 400;
+}
+.spec-info { flex: 1; }
+.spec-titre { font-size: 18px; font-weight: 500; color: var(--noir); line-height: 1.3; }
+.spec-sub { font-size: 14px; color: var(--gris); margin-top: 2px; }
+.spec-badge {
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.sb-soon { background: var(--urgent-p); color: var(--urgent); }
+.sb-near { background: var(--prio-p); color: var(--prio); }
+.sb-far  { background: var(--vert-pale); color: var(--vert); }
+
+/* ── MAI ── */
+.mois-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gris-pale);
+  cursor: pointer;
+  transition: background .1s;
+  border-radius: 4px;
+  padding-left: 4px;
+}
+.mois-item:last-child { border-bottom: none; }
+.mois-item:hover { background: var(--vert-xs); }
+.mois-item.done .mois-texte { text-decoration: line-through; color: var(--gris-p); }
+.mois-check {
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  border: 1.5px solid var(--gris-pale);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff;
+  transition: all .15s;
+}
+.mois-check.done { background: var(--vert); border-color: var(--vert); }
+.mois-check.done::after {
+  content: '';
+  width: 7px; height: 4px;
+  border-left: 1.5px solid #fff;
+  border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
+}
+.mois-texte { flex: 1; font-size: 18px; color: var(--noir); }
+.mois-del {
+  background: none; border: none; cursor: pointer;
+  color: var(--gris-pale); font-size: 16px; padding: 0 3px;
+  opacity: 0; transition: opacity .1s;
+}
+.mois-item:hover .mois-del { opacity: 1; }
+.add-mois-row {
+  display: flex; gap: 6px; margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid var(--gris-pale);
+}
+.add-mois-row input {
+  flex: 1; padding: 8px 12px;
+  border: 1px solid var(--gris-pale); border-radius: 8px;
+  font-size: 16px; font-family: 'DM Sans', sans-serif;
+  color: var(--noir); background: var(--blanc); outline: none;
+}
+.add-mois-row input:focus { border-color: var(--vert); }
+.add-mois-row button {
+  padding: 8px 14px; background: var(--vert); color: #fff;
+  border: none; border-radius: 8px; font-size: 16px;
+  font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: opacity .15s;
+}
+.add-mois-row button:hover { opacity: .85; }
+
+/* ── NOTE ── */
+.note-zone {
+  width: 100%; background: transparent;
+  border: none; outline: none;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 22px;
+  color: var(--noir);
+  resize: none;
+  line-height: 1.7;
+  min-height: 100px;
+}
+.note-zone::placeholder { color: var(--gris-p); }
+
+/* ── PLANNING (onglet) ── */
+#planning-root { min-height: 60vh; }
+
+/* ── TO-DO AUJOURD'HUI ── */
+.today-todo-item{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--gris-pale);cursor:pointer;transition:background .1s;border-radius:4px}
+.today-todo-item:last-child{border-bottom:none}
+.today-todo-item:hover{background:var(--vert-xs)}
+.today-todo-item.done .today-todo-txt{text-decoration:line-through;color:var(--gris-p)}
+.today-todo-check{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--gris-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;transition:all .15s}
+.today-todo-check.done{background:var(--vert);border-color:var(--vert)}
+.today-todo-check.done::after{content:'';width:8px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px);display:block}
+.today-todo-txt{flex:1;font-size:17px;color:var(--noir);line-height:1.4}
+.today-todo-del{background:none;border:none;cursor:pointer;color:var(--gris-pale);font-size:14px;padding:0 3px;opacity:0;transition:opacity .1s}
+.today-todo-item:hover .today-todo-del{opacity:1}
+.today-archive-item{display:flex;align-items:center;gap:8px;padding:5px 4px;font-size:14px;color:var(--gris)}
+.today-archive-item span{flex:1;text-decoration:line-through}
+.today-archive-item time{font-size:12px;color:var(--gris-p)}
+
+.footer {
+  text-align: center; font-size: 15px; color: var(--gris-p);
+  padding: 32px; letter-spacing: 2px; text-transform: uppercase;
+}
+
+@media(max-width:900px) {
+  .grid-main { grid-template-columns: 1fr 1fr; }
+  .grid-bas { grid-template-columns: 1fr; }
+}
+@media(max-width:600px) {
+  .grid-main { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+  .topbar { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-nom">Espace <em>Dany</em></div>
+    <div class="topbar-sub">Théâtre du Bocal · Saison 2025–2026</div>
+  </div>
+  <div class="horloge">
+    <div class="horloge-h" id="horloge-h">--:--</div>
+    <div class="horloge-date" id="horloge-date"></div>
+  </div>
+</div>
+
+<div class="onglets-nav">
+  <button class="onglet-btn active" onclick="switchOnglet('cockpit',this)">✦ Espace</button>
+  <button class="onglet-btn" onclick="switchOnglet('planning',this)">◯ Planning</button>
+</div>
+
+<!-- ONGLET COCKPIT -->
+<div id="onglet-cockpit" class="onglet-section active">
+<div class="main">
+
+  <div class="salut" id="salut">Bonjour <em>Dany</em></div>
+  <div class="salut-sous" id="salut-sous"></div>
+
+  <div class="grid-main">
+
+    <!-- CALENDRIER PERSO -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-titre">Calendrier</div>
+        <span class="card-badge badge-vert" id="badge-cal">—</span>
+      </div>
+      <div class="card-body">
+        <div class="cal-nav">
+          <button onclick="calPrev()">‹</button>
+          <div class="cal-nav-titre" id="cal-titre"></div>
+          <button onclick="calNext()">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-events" id="cal-events"></div>
+        <div class="add-event-row">
+          <input type="text" id="new-event-txt" placeholder="Ajouter un rendez-vous...">
+          <input type="date" id="new-event-date" style="width:130px">
+          <button onclick="addEvent()">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TÂCHES -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-titre">Tâches</div>
+        <span class="card-badge badge-gris" id="badge-tasks">—</span>
+      </div>
+      <div class="card-body">
+        <div id="tasks-container"></div>
+        <div class="add-task-zone">
+          <input type="text" id="new-task-txt" placeholder="Nouvelle tâche...">
+          <select id="new-task-cat">
+            <option value="urgent">Urgent</option>
+            <option value="prio" selected>Prioritaire</option>
+            <option value="import">Important</option>
+          </select>
+          <button onclick="addTask()">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTE DU MOMENT -->
+    <div class="card" style="display:flex;flex-direction:column">
+      <div class="card-header">
+        <div class="card-titre">Note du moment</div>
+        <span class="card-badge badge-gris">Pensée libre</span>
+      </div>
+      <div class="card-body" style="flex:1">
+        <textarea class="note-zone" id="note-zone" placeholder="Une idée, une image, un mot..."></textarea>
+      </div>
+      <!-- SPECTACLES -->
+      <div class="card-header" style="border-top:1px solid var(--gris-pale)">
+        <div class="card-titre">Spectacles à venir</div>
+        <span class="card-badge badge-rose">Bocal 2026</span>
+      </div>
+      <div class="card-body">
+        <div id="spectacles-container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAI -->
+  <div class="grid-bas">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-titre">Mai — ce mois-ci</div>
+        <span class="card-badge badge-vert" id="badge-mai">—</span>
+      </div>
+      <div class="card-body">
+        <div id="mai-container"></div>
+        <div class="add-mois-row">
+          <input type="text" id="new-mai-txt" placeholder="Ajouter une intention pour mai...">
+          <button onclick="addMai()">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-titre" id="titre-today">Aujourd'hui</div>
+        <span class="card-badge badge-vert" id="badge-today">—</span>
+      </div>
+      <div class="card-body">
+        <div id="today-body"></div>
+        <div id="today-sep" style="border-top:1.5px dashed var(--vert-pale);margin:12px 0;display:none"></div>
+        <div id="today-todo"></div>
+        <div class="add-mois-row" style="margin-top:12px">
+          <input type="text" id="new-today-txt" placeholder="À faire aujourd'hui...">
+          <button onclick="addTodayTodo()">+</button>
+        </div>
+        <div id="today-archive-wrap" style="margin-top:10px;display:none">
+          <div onclick="toggleTodayArchive()" style="font-size:15px;color:var(--gris);cursor:pointer">
+            📦 <span id="today-archive-label"></span>
+          </div>
+          <div id="today-archive" style="display:none;margin-top:6px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="footer">Espace Dany · Théâtre du Bocal · Nice · 2025–2026</div>
+</div>
+
+<!-- ONGLET PLANNING -->
+<div id="onglet-planning" class="onglet-section">
+  <div id="planning-root"></div>
+</div>
+
+<!-- React + Babel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<script>
+// ══════════════════════════════════════════
+// PLANNING BASE (Bocal 2026)
+// ══════════════════════════════════════════
+var PLANNING_BASE = [
+  {date:"2026-04-01",categorie:"cours",titre:"Cours Pitchoun · Pré-ado · Seb",horaire:"10h · 14h · 18h30"},
+  {date:"2026-04-02",categorie:"cours",titre:"Cours Ralf",horaire:"19h"},
+  {date:"2026-04-03",categorie:"repetition",titre:"Répétition Marlène",horaire:"10h30–14h30"},
+  {date:"2026-04-15",categorie:"technique",titre:"Technique Jerome / Mag / Marlène",horaire:"10h–17h"},
+  {date:"2026-04-18",categorie:"spectacle",titre:"BATM — Spectacle",horaire:"18h"},
+  {date:"2026-04-19",categorie:"spectacle",titre:"Tirez C'est Joué !",horaire:"18h"},
+  {date:"2026-04-24",categorie:"spectacle",titre:"Jules Renard",horaire:"20h"},
+  {date:"2026-04-25",categorie:"spectacle",titre:"Smith & Wesson",horaire:"18h"},
+  {date:"2026-05-02",categorie:"spectacle",titre:"Cabaret d'Impro",horaire:"19h"},
+  {date:"2026-05-13",categorie:"spectacle",titre:"Spectacle Ralf",horaire:"—"},
+  {date:"2026-05-14",categorie:"spectacle",titre:"Spectacle Ralf",horaire:"—"},
+  {date:"2026-05-20",categorie:"spectacle",titre:"Espèce Menacée",horaire:"20h"},
+  {date:"2026-05-21",categorie:"spectacle",titre:"Espèce Menacée",horaire:"20h"},
+  {date:"2026-05-24",categorie:"spectacle",titre:"Jules Renard",horaire:"20h"},
+  {date:"2026-06-05",categorie:"spectacle",titre:"Far Far America",horaire:"20h"},
+  {date:"2026-06-06",categorie:"spectacle",titre:"Far Far America",horaire:"18h"},
+  {date:"2026-06-07",categorie:"spectacle",titre:"Far Far America",horaire:"15h"},
+  {date:"2026-06-12",categorie:"repetition",titre:"Général spectacle Ralf",horaire:"—"},
+  {date:"2026-06-13",categorie:"spectacle",titre:"Spectacle Ralf",horaire:"—"},
+  {date:"2026-06-14",categorie:"spectacle",titre:"Spectacle Ralf",horaire:"—"},
+  {date:"2026-06-20",categorie:"spectacle",titre:"Espèce Menacée",horaire:"20h"},
+  {date:"2026-06-21",categorie:"spectacle",titre:"Espèce Menacée",horaire:"20h"},
+  {date:"2026-06-27",categorie:"spectacle",titre:"Espèce Menacée",horaire:"20h"},
+  {date:"2026-06-28",categorie:"spectacle",titre:"Espèce Menacée",horaire:"20h"},
+];
+
+var MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+var JOURS_L = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+var JOURS_C = ['Di','Lu','Ma','Me','Je','Ve','Sa'];
+var today = new Date();
+
+// ══════════════════════════════════════════
+// STOCKAGE — Firebase Realtime Database
+// ══════════════════════════════════════════
+var DATA = {
+  tasks: [
+    {id:1, txt:"Appeler le médecin", cat:"urgent", done:false},
+    {id:2, txt:"Envoyer le script à la compagnie", cat:"prio", done:false},
+    {id:3, txt:"Finir l'adaptation du chapitre 3", cat:"prio", done:false},
+    {id:4, txt:"Commander fournitures illustration", cat:"import", done:false},
+  ],
+  mai: [
+    {id:1, txt:"Réservations costumes", done:false},
+    {id:2, txt:"RDV avec Magali — Bocal", done:false},
+    {id:3, txt:"Envoyer bilan à la SACD", done:false},
+  ],
+  events: [],
+};
+
+var _fbLoaded = false;
+
+function save() {
+  db.ref('cockpit').set({
+    tasks: DATA.tasks,
+    mai: DATA.mai,
+    events: DATA.events
+  });
+}
+
+function load() {
+  db.ref('cockpit').once('value', function(snapshot) {
+    var d = snapshot.val();
+    if (d) {
+      if (d.tasks) DATA.tasks = d.tasks;
+      if (d.mai)   DATA.mai   = d.mai;
+      if (d.events) DATA.events = d.events;
+    }
+    _fbLoaded = true;
+    // Petit délai pour laisser le DOM se stabiliser
+    setTimeout(function() {
+      renderCal();
+      renderTasks();
+      renderMai();
+      renderSpectacles();
+      renderToday();
+      renderTodayTodo();
+    }, 50);
+  });
+}
+
+// ══════════════════════════════════════════
+// HORLOGE
+// ══════════════════════════════════════════
+function tickHorloge() {
+  var now = new Date();
+  var h = String(now.getHours()).padStart(2,'0');
+  var m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('horloge-h').textContent = h + ' : ' + m;
+}
+setInterval(tickHorloge, 1000);
+tickHorloge();
+
+// Date + salut
+var h = today.getHours();
+var salutTxt = h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
+document.getElementById('salut').innerHTML = salutTxt + ' <em>Dany</em>';
+document.getElementById('salut-sous').textContent = JOURS_L[today.getDay()] + ' ' + today.getDate() + ' ' + MOIS[today.getMonth()] + ' ' + today.getFullYear();
+document.getElementById('horloge-date').textContent = JOURS_C[today.getDay()] + ' ' + today.getDate() + ' ' + MOIS[today.getMonth()].substring(0,4) + '.';
+
+// ══════════════════════════════════════════
+// CALENDRIER
+// ══════════════════════════════════════════
+var calMois = today.getMonth();
+var calAnnee = today.getFullYear();
+
+function renderCal() {
+  document.getElementById('cal-titre').textContent = MOIS[calMois] + ' ' + calAnnee;
+  var grid = document.getElementById('cal-grid');
+  var jours = ['Lu','Ma','Me','Je','Ve','Sa','Di'];
+  var html = jours.map(j => '<div class="cal-dow">'+j+'</div>').join('');
+  var first = new Date(calAnnee, calMois, 1).getDay();
+  var offset = first === 0 ? 6 : first - 1;
+  var nbJours = new Date(calAnnee, calMois+1, 0).getDate();
+  for (var i=0; i<offset; i++) html += '<div class="cal-day empty"></div>';
+  for (var j=1; j<=nbJours; j++) {
+    var isoDate = calAnnee + '-' + String(calMois+1).padStart(2,'0') + '-' + String(j).padStart(2,'0');
+    var isToday = today.getFullYear()===calAnnee && today.getMonth()===calMois && today.getDate()===j;
+    var dow = new Date(calAnnee, calMois, j).getDay();
+    var isWE = dow===0||dow===6;
+    var hasEv = DATA.events.some(e=>e.date===isoDate) || PLANNING_BASE.some(e=>e.date===isoDate&&e.categorie==='repetition');
+    var cls = 'cal-day' + (isToday?' today':'') + (isWE?' we':'') + (hasEv?' has-event':'');
+    html += '<div class="'+cls+'" onclick="calDayClick(\''+isoDate+'\')">'+j+'</div>';
+  }
+  grid.innerHTML = html;
+
+  // Événements du mois
+  var evsMois = DATA.events.filter(e => {
+    var d = new Date(e.date);
+    return d.getMonth()===calMois && d.getFullYear()===calAnnee;
+  }).sort((a,b) => a.date.localeCompare(b.date));
+  // + répétitions Bocal ce mois
+  var reps = PLANNING_BASE.filter(e => {
+    var d = new Date(e.date);
+    return d.getMonth()===calMois && d.getFullYear()===calAnnee && e.categorie==='repetition';
+  });
+  var total = evsMois.length + reps.length;
+  document.getElementById('badge-cal').textContent = total > 0 ? total + ' événement' + (total>1?'s':'') : 'Rien ce mois';
+
+  var evsHtml = '';
+  reps.forEach(r => {
+    var d = new Date(r.date);
+    evsHtml += '<div class="cal-event-item">'
+      + '<div class="cal-event-dot" style="background:var(--vert)"></div>'
+      + '<div class="cal-event-txt">🎭 ' + r.titre + (r.horaire&&r.horaire!=='—'?' · '+r.horaire:'') + '</div>'
+      + '<div class="cal-event-date">' + d.getDate() + ' ' + MOIS[d.getMonth()].substring(0,3) + '.</div>'
+      + '</div>';
+  });
+  evsMois.forEach(e => {
+    var d = new Date(e.date);
+    evsHtml += '<div class="cal-event-item">'
+      + '<div class="cal-event-dot" style="background:var(--rose)"></div>'
+      + '<div class="cal-event-txt">' + e.txt + '</div>'
+      + '<div class="cal-event-date">' + d.getDate() + ' ' + MOIS[d.getMonth()].substring(0,3) + '.</div>'
+      + '<button class="cal-event-del" onclick="deleteEvent(\''+e.id+'\')">✕</button>'
+      + '</div>';
+  });
+  document.getElementById('cal-events').innerHTML = evsHtml || '<div style="color:var(--gris-p);font-size:15px;padding:8px 0;font-style:italic">Aucun événement ce mois</div>';
+
+  // Pré-remplir la date
+  var todayIso = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  document.getElementById('new-event-date').value = todayIso;
+}
+
+function calPrev() { calMois--; if(calMois<0){calMois=11;calAnnee--;} renderCal(); }
+function calNext() { calMois++; if(calMois>11){calMois=0;calAnnee++;} renderCal(); }
+function calDayClick(iso) {
+  document.getElementById('new-event-date').value = iso;
+  document.getElementById('new-event-txt').focus();
+}
+
+function addEvent() {
+  var txt = document.getElementById('new-event-txt').value.trim();
+  var date = document.getElementById('new-event-date').value;
+  if (!txt || !date) return;
+  var id = 'ev-' + Date.now();
+  DATA.events.push({id, txt, date});
+  document.getElementById('new-event-txt').value = '';
+  save(); renderCal();
+}
+
+function deleteEvent(id) {
+  DATA.events = DATA.events.filter(e => e.id !== id);
+  save(); renderCal();
+}
+
+// ══════════════════════════════════════════
+// TÂCHES
+// ══════════════════════════════════════════
+var CAT_LABELS = {urgent:'Urgent',prio:'Prioritaire',import:'Important'};
+var CAT_ORDER = ['urgent','prio','import'];
+
+function renderTasks() {
+  var container = document.getElementById('tasks-container');
+  var total = DATA.tasks.length;
+  var done = DATA.tasks.filter(t=>t.done).length;
+  document.getElementById('badge-tasks').textContent = (total-done) + ' restante' + (total-done!==1?'s':'');
+
+  var html = '';
+  CAT_ORDER.forEach(cat => {
+    var items = DATA.tasks.filter(t => t.cat===cat);
+    if (items.length===0) return;
+    html += '<div class="task-groupe">';
+    html += '<div class="task-groupe-titre tg-'+cat+'">'+CAT_LABELS[cat]+'</div>';
+    items.forEach(t => {
+      var checkCls = t.done ? 'task-check done-'+cat : 'task-check';
+      html += '<div class="task-ligne'+(t.done?' done':'')+'" onclick="toggleTask('+t.id+')">'
+        + '<div class="'+checkCls+'"></div>'
+        + '<div class="task-texte">'+t.txt+'</div>'
+        + '<button class="task-del" onclick="event.stopPropagation();deleteTask('+t.id+')">✕</button>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function toggleTask(id) {
+  DATA.tasks.forEach(t => { if(t.id===id) t.done = !t.done; });
+  save(); renderTasks();
+}
+function deleteTask(id) {
+  DATA.tasks = DATA.tasks.filter(t => t.id!==id);
+  save(); renderTasks();
+}
+function addTask() {
+  var txt = document.getElementById('new-task-txt').value.trim();
+  var cat = document.getElementById('new-task-cat').value;
+  if (!txt) return;
+  var id = Math.max(0,...DATA.tasks.map(t=>t.id)) + 1;
+  DATA.tasks.push({id, txt, cat, done:false});
+  document.getElementById('new-task-txt').value = '';
+  save(); renderTasks();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('new-task-txt').addEventListener('keydown', e => { if(e.key==='Enter') addTask(); });
+  document.getElementById('new-event-txt').addEventListener('keydown', e => { if(e.key==='Enter') addEvent(); });
+  document.getElementById('new-mai-txt').addEventListener('keydown', e => { if(e.key==='Enter') addMai(); });
+  var ntt=document.getElementById('new-today-txt'); if(ntt) ntt.addEventListener('keydown', e => { if(e.key==='Enter') addTodayTodo(); });
+  document.getElementById('new-today-txt').addEventListener('keydown', e => { if(e.key==='Enter') addTodayTodo(); });
+});
+
+// ══════════════════════════════════════════
+// MAI
+// ══════════════════════════════════════════
+function renderMai() {
+  var done = DATA.mai.filter(m=>m.done).length;
+  var total = DATA.mai.length;
+  document.getElementById('badge-mai').textContent = (total-done) + ' restante' + (total-done!==1?'s':'');
+  document.getElementById('mai-container').innerHTML = DATA.mai.map(m =>
+    '<div class="mois-item'+(m.done?' done':'')+'" onclick="toggleMai('+m.id+')">'
+    + '<div class="mois-check'+(m.done?' done':'')+'"></div>'
+    + '<div class="mois-texte">'+m.txt+'</div>'
+    + '<button class="mois-del" onclick="event.stopPropagation();deleteMai('+m.id+')">✕</button>'
+    + '</div>'
+  ).join('');
+}
+function toggleMai(id) { DATA.mai.forEach(m=>{if(m.id===id)m.done=!m.done;}); save(); renderMai(); }
+function deleteMai(id) { DATA.mai=DATA.mai.filter(m=>m.id!==id); save(); renderMai(); }
+function addMai() {
+  var txt = document.getElementById('new-mai-txt').value.trim();
+  if (!txt) return;
+  var id = Math.max(0,...DATA.mai.map(m=>m.id))+1;
+  DATA.mai.push({id,txt,done:false});
+  document.getElementById('new-mai-txt').value='';
+  save(); renderMai();
+}
+
+// ══════════════════════════════════════════
+// SPECTACLES À VENIR
+// ══════════════════════════════════════════
+function renderSpectacles() {
+  var nowMs = new Date(today.getFullYear(),today.getMonth(),today.getDate()).getTime();
+  var specs = [];
+  PLANNING_BASE.filter(e=>e.categorie==='spectacle').forEach(e => {
+    var d = new Date(e.date);
+    var diff = Math.round((d.getTime()-nowMs)/86400000);
+    if (diff < 0 || diff > 90) return;
+    var nom = e.titre;
+    var ex = specs.find(s=>s.nom===nom && Math.abs(s.dernierJ - d.getDate())<=2 && s.mois===d.getMonth());
+    if (ex) { ex.dernierJ=d.getDate(); ex.nb++; }
+    else specs.push({nom,mois:d.getMonth(),premierJ:d.getDate(),dernierJ:d.getDate(),nb:1,diff});
+  });
+  specs.sort((a,b)=>a.diff-b.diff);
+  document.getElementById('spectacles-container').innerHTML = specs.slice(0,5).map(s => {
+    var dateLabel = s.premierJ===s.dernierJ
+      ? s.premierJ+' '+MOIS[s.mois].substring(0,3)+'.'
+      : s.premierJ+'–'+s.dernierJ+' '+MOIS[s.mois].substring(0,3)+'.';
+    var bCls = s.diff<=3?'sb-soon':s.diff<=14?'sb-near':'sb-far';
+    var bTxt = s.diff===0?'Aujourd\'hui':s.diff===1?'Demain':'J-'+s.diff;
+    return '<div class="spec-item">'
+      +'<div class="spec-date">'+dateLabel+'</div>'
+      +'<div class="spec-info"><div class="spec-titre">'+s.nom+'</div>'+(s.nb>1?'<div class="spec-sub">'+s.nb+' dates</div>':'')+'</div>'
+      +'<span class="spec-badge '+bCls+'">'+bTxt+'</span>'
+      +'</div>';
+  }).join('') || '<div style="color:var(--gris-p);font-size:17px;font-style:italic">Aucun spectacle à venir</div>';
+}
+
+// ══════════════════════════════════════════
+// AUJOURD'HUI (planning Bocal)
+// ══════════════════════════════════════════
+// ══════ TO-DO AUJOURD'HUI ══════
+function todoTodayKey() {
+  return 'todoJour/' + today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+}
+function loadTodayTodo() {
+  // Retourne les données en mémoire (déjà chargées via listener)
+  return window._todayTodoData || {actives:[], archives:[]};
+}
+function saveTodayTodo(data) {
+  window._todayTodoData = data;
+  db.ref(todoTodayKey()).set(data);
+}
+
+// Écoute en temps réel le todo du jour
+db.ref(todoTodayKey()).on('value', function(snap) {
+  var d = snap.val();
+  window._todayTodoData = d || {actives:[], archives:[]};
+  renderTodayTodo();
+});
+function renderTodayTodo() {
+  var data = loadTodayTodo();
+  var el = document.getElementById('today-todo');
+  var sep = document.getElementById('today-sep');
+  if (sep) sep.style.display = data.actives.length > 0 ? 'block' : 'none';
+  if (!el) return;
+  if (data.actives.length === 0) {
+    el.innerHTML = '<div style="color:var(--gris);font-size:16px;font-style:italic;padding:4px 0">Rien à faire pour l\'instant 🌿</div>';
+  } else {
+    el.innerHTML = data.actives.map(function(t) {
+      return '<div class="today-todo-item' + (t.done ? ' done' : '') + '" onclick="toggleTodayTodo(' + t.id + ')">'
+        + '<div class="today-todo-check' + (t.done ? ' done' : '') + '"></div>'
+        + '<div class="today-todo-txt">' + t.txt + '</div>'
+        + '<button class="today-todo-del" onclick="event.stopPropagation();deleteTodayTodo(' + t.id + ')">✕</button>'
+        + '</div>';
+    }).join('');
+  }
+  var wrap = document.getElementById('today-archive-wrap');
+  var archEl = document.getElementById('today-archive');
+  var label = document.getElementById('today-archive-label');
+  if (!wrap) return;
+  if (data.archives.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  label.textContent = data.archives.length + ' tâche' + (data.archives.length > 1 ? 's' : '') + ' faite' + (data.archives.length > 1 ? 's' : '');
+  archEl.innerHTML = data.archives.map(function(t) {
+    return '<div class="today-archive-item">✓ <span>' + t.txt + '</span><time>' + t.doneAt + '</time></div>';
+  }).join('');
+}
+function addTodayTodo() {
+  var txt = document.getElementById('new-today-txt').value.trim();
+  if (!txt) return;
+  var data = loadTodayTodo();
+  data.actives.push({id: Date.now(), txt: txt, done: false});
+  saveTodayTodo(data);
+  document.getElementById('new-today-txt').value = '';
+  renderTodayTodo();
+}
+function toggleTodayTodo(id) {
+  var data = loadTodayTodo();
+  var t = data.actives.find(function(x) { return x.id === id; });
+  if (!t) return;
+  if (!t.done) {
+    t.done = true;
+    saveTodayTodo(data);
+    renderTodayTodo();
+    setTimeout(function() {
+      var d2 = loadTodayTodo();
+      var idx = d2.actives.findIndex(function(x) { return x.id === id; });
+      if (idx === -1) return;
+      var tache = d2.actives.splice(idx, 1)[0];
+      var n = new Date();
+      tache.doneAt = String(n.getHours()).padStart(2,'0') + 'h' + String(n.getMinutes()).padStart(2,'0');
+      d2.archives.unshift(tache);
+      saveTodayTodo(d2);
+      renderTodayTodo();
+    }, 700);
+  } else {
+    t.done = false;
+    saveTodayTodo(data);
+    renderTodayTodo();
+  }
+}
+function deleteTodayTodo(id) {
+  var data = loadTodayTodo();
+  data.actives = data.actives.filter(function(t) { return t.id !== id; });
+  saveTodayTodo(data);
+  renderTodayTodo();
+}
+function toggleTodayArchive() {
+  var el = document.getElementById('today-archive');
+  var label = document.getElementById('today-archive-label');
+  var data = loadTodayTodo();
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    label.textContent = '▲ Masquer';
+  } else {
+    el.style.display = 'none';
+    label.textContent = data.archives.length + ' tâche' + (data.archives.length > 1 ? 's' : '') + ' faite' + (data.archives.length > 1 ? 's' : '');
+  }
+}
+function renderToday() {
+  var JOURS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  var MC = ['Jan.','Fév.','Mar.','Avr.','Mai','Juin','Juil.','Août','Sep.','Oct.','Nov.','Déc.'];
+  var iso = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  var titre = document.getElementById('titre-today');
+  if (titre) titre.textContent = JOURS[today.getDay()] + ' ' + today.getDate() + ' ' + MC[today.getMonth()];
+  var evs = PLANNING_BASE.filter(function(e) { return e.date === iso && e.categorie !== 'cours' && e.categorie !== 'ferme'; });
+  var badge = document.getElementById('badge-today');
+  var body = document.getElementById('today-body');
+  if (evs.length === 0) {
+    badge.textContent = 'Libre 🌿';
+    badge.className = 'card-badge badge-gris';
+    body.innerHTML = '';
+  } else {
+    var hasSpec = evs.some(function(e) { return e.categorie === 'spectacle'; });
+    badge.textContent = hasSpec ? '🎭 Spectacle' : '📋 Bocal';
+    badge.className = 'card-badge ' + (hasSpec ? 'badge-rose' : 'badge-vert');
+    body.innerHTML = evs.map(function(e) {
+      var icon = e.categorie === 'spectacle' ? '🎭' : e.categorie === 'repetition' ? '🔄' : '🔧';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gris-pale)">'
+        + '<span style="font-size:20px">' + icon + '</span>'
+        + '<span style="font-size:17px;color:var(--noir)">' + e.titre + '</span>'
+        + (e.horaire && e.horaire !== '—' ? '<span style="font-size:14px;color:var(--gris-p)"> · ' + e.horaire + '</span>' : '')
+        + '</div>';
+    }).join('');
+  }
+  renderTodayTodo();
+}
+// ══════════════════════════════════════════
+// NOTE — Firebase
+// ══════════════════════════════════════════
+var noteEl = document.getElementById('note-zone');
+db.ref('note').once('value', function(snap) {
+  noteEl.value = snap.val() || '';
+});
+noteEl.addEventListener('input', function() {
+  db.ref('note').set(noteEl.value);
+});
+
+// ══════════════════════════════════════════
+// ONGLETS
+// ══════════════════════════════════════════
+function switchOnglet(nom, btn) {
+  document.querySelectorAll('.onglet-section').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.onglet-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('onglet-'+nom).classList.add('active');
+  btn.classList.add('active');
+  if (nom==='planning' && window._mountPlanningDany) window._mountPlanningDany();
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+load(); // charge Firebase et appelle les renders
+</script>
+
+<script type="text/babel">
+
+
+
+const { useState, useMemo, useEffect } = React;
+
+const EVENTS_BASE = [
+  { id:"base-1",  date:"2026-04-01", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-2",  date:"2026-04-02", categorie:"cours",      titre:"Cours Ralf",                               responsable:"Ralf",    horaire:"19h" },
+  { id:"base-3",  date:"2026-04-03", categorie:"repetition", titre:"Répétition Marlène",                       responsable:"Marlène", horaire:"10h30–14h30" },
+  { id:"base-4",  date:"2026-04-05", categorie:"cours",      titre:"Cours Ralf + Répétition Marlène",          responsable:"Ralf / Marlène", horaire:"19h" },
+  { id:"base-5",  date:"2026-04-06", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-6",  date:"2026-04-08", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-7",  date:"2026-04-09", categorie:"cours",      titre:"Cours Ralf",                               responsable:"Ralf",    horaire:"19h" },
+  { id:"base-8",  date:"2026-04-11", categorie:"cours",      titre:"Cours adulte samedi",                      responsable:"",       horaire:"10h" },
+  { id:"base-9",  date:"2026-04-13", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-10", date:"2026-04-14", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-11", date:"2026-04-15", categorie:"technique",  titre:"Technique Jerome / Mag / Marlène",         responsable:"Jerome / Marlène", horaire:"10h–17h" },
+  { id:"base-12", date:"2026-04-16", categorie:"technique",  titre:"Affichage Tetiana & Araschk + Cours Ralf", responsable:"Tetiana / Araschk / Ralf", horaire:"matin + 19h" },
+  { id:"base-13", date:"2026-04-17", categorie:"repetition", titre:"Répétition BATM + Pose décors",            responsable:"Araschk / Tetiana", horaire:"10h–18h" },
+  { id:"base-14", date:"2026-04-18", categorie:"spectacle",  titre:"BATM — SPECTACLE",                         responsable:"",       horaire:"18h" },
+  { id:"base-15", date:"2026-04-19", categorie:"spectacle",  titre:"TIREZ C'EST JOUÉ",                         responsable:"",       horaire:"18h" },
+  { id:"base-16", date:"2026-04-20", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-17", date:"2026-04-21", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-18", date:"2026-04-22", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-19", date:"2026-04-23", categorie:"cours",      titre:"Cours Ralf",                               responsable:"Ralf",    horaire:"19h" },
+  { id:"base-20", date:"2026-04-24", categorie:"spectacle",  titre:"JULES RENARD",                             responsable:"",       horaire:"20h" },
+  { id:"base-21", date:"2026-04-25", categorie:"spectacle",  titre:"SMITH & WESSON",                           responsable:"",       horaire:"18h" },
+  { id:"base-22", date:"2026-04-26", categorie:"annule",     titre:"L'ÉTRANGLEUSE — annulé",                   responsable:"",       horaire:"" },
+  { id:"base-23", date:"2026-04-27", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-24", date:"2026-04-28", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-25", date:"2026-05-02", categorie:"spectacle",  titre:"CABARET D'IMPRO",                          responsable:"",       horaire:"19h" },
+  { id:"base-26", date:"2026-05-04", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-27", date:"2026-05-05", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-28", date:"2026-05-06", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-29", date:"2026-05-07", categorie:"cours",      titre:"Cours Ralf",                               responsable:"Ralf",    horaire:"19h" },
+  { id:"base-30", date:"2026-05-09", categorie:"cours",      titre:"Cours adulte samedi",                      responsable:"",       horaire:"10h" },
+  { id:"base-31", date:"2026-05-11", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-32", date:"2026-05-12", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-33", date:"2026-05-13", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-34", date:"2026-05-14", categorie:"cours",      titre:"Cours Ralf",                               responsable:"Ralf",    horaire:"19h" },
+  { id:"base-35", date:"2026-05-16", categorie:"cours",      titre:"Cours adulte samedi",                      responsable:"",       horaire:"10h" },
+  { id:"base-36", date:"2026-05-18", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-37", date:"2026-05-19", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-38", date:"2026-06-20", categorie:"spectacle",  titre:"ESPÈCE MENACÉE",                           responsable:"Seb",    horaire:"20h" },
+  { id:"base-39", date:"2026-06-21", categorie:"spectacle",  titre:"ESPÈCE MENACÉE",                           responsable:"Seb",    horaire:"20h" },
+  { id:"base-40", date:"2026-05-25", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-41", date:"2026-05-26", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-42", date:"2026-05-27", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-43", date:"2026-06-27", categorie:"spectacle",  titre:"ESPÈCE MENACÉE",                           responsable:"Seb",    horaire:"20h" },
+  { id:"base-44", date:"2026-06-28", categorie:"spectacle",  titre:"ESPÈCE MENACÉE",                           responsable:"Seb",    horaire:"20h" },
+  { id:"base-45", date:"2026-05-30", categorie:"cours",      titre:"Cours adulte samedi",                      responsable:"",       horaire:"10h" },
+  { id:"base-46", date:"2026-06-01", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-47", date:"2026-06-02", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-48", date:"2026-06-03", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-49", date:"2026-06-04", categorie:"cours",      titre:"Cours Ralf",                               responsable:"Ralf",    horaire:"19h" },
+  { id:"base-50", date:"2026-06-05", categorie:"spectacle",  titre:"FAR FAR AMERICA",                          responsable:"",       horaire:"—" },
+  { id:"base-51", date:"2026-06-06", categorie:"spectacle",  titre:"FAR FAR AMERICA",                          responsable:"",       horaire:"—" },
+  { id:"base-52", date:"2026-06-07", categorie:"spectacle",  titre:"FAR FAR AMERICA",                          responsable:"",       horaire:"—" },
+  { id:"base-53", date:"2026-06-08", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-54", date:"2026-06-09", categorie:"cours",      titre:"Cours Marlène impro",                      responsable:"Marlène", horaire:"19h" },
+  { id:"base-55", date:"2026-06-10", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-56", date:"2026-06-11", categorie:"cours",      titre:"Cours Ralf",                               responsable:"Ralf",    horaire:"19h" },
+  { id:"base-57", date:"2026-06-12", categorie:"repetition", titre:"Général spectacle RALF",                   responsable:"Ralf",   horaire:"—" },
+  { id:"base-58", date:"2026-06-13", categorie:"spectacle",  titre:"Spectacle RALF",                           responsable:"Ralf",   horaire:"—" },
+  { id:"base-59", date:"2026-06-14", categorie:"spectacle",  titre:"Spectacle RALF",                           responsable:"Ralf",   horaire:"—" },
+  { id:"base-60", date:"2026-06-15", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-61", date:"2026-07-01", categorie:"ferme",      titre:"Fermeture estivale",                       responsable:"",       horaire:"" },
+  { id:"base-62", date:"2026-08-01", categorie:"ferme",      titre:"Fermeture estivale",                       responsable:"",       horaire:"" },
+  { id:"base-63", date:"2026-09-15", categorie:"cours",      titre:"Rentrée — Cours impro Marlène",            responsable:"Marlène", horaire:"19h" },
+  { id:"base-64", date:"2026-09-16", categorie:"cours",      titre:"Cours Pitchoun · Pré-ado · Seb",          responsable:"Marlène / Catherine / Seb", horaire:"10h · 14h · 18h30" },
+  { id:"base-65", date:"2026-09-17", categorie:"cours",      titre:"Cours Ralf",                               responsable:"Ralf",    horaire:"19h" },
+  { id:"base-66", date:"2026-09-19", categorie:"cours",      titre:"Cours adulte samedi",                      responsable:"",       horaire:"10h" },
+  { id:"base-67", date:"2026-09-21", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"base-68", date:"2026-09-28", categorie:"cours",      titre:"Cours Seb",                                responsable:"Seb",    horaire:"19h" },
+  { id:"vac-70", date:"2026-02-14", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-71", date:"2026-02-15", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-72", date:"2026-02-16", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-73", date:"2026-02-17", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-74", date:"2026-02-18", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-75", date:"2026-02-19", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-76", date:"2026-02-20", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-77", date:"2026-02-21", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-78", date:"2026-02-22", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-79", date:"2026-02-23", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-80", date:"2026-02-24", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-81", date:"2026-02-25", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-82", date:"2026-02-26", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-83", date:"2026-02-27", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-84", date:"2026-02-28", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-85", date:"2026-03-01", categorie:"ferme", titre:"Vacances scolaires Zone B — Hiver", responsable:"", horaire:"" },
+  { id:"vac-86", date:"2026-04-18", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-87", date:"2026-04-19", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-88", date:"2026-04-20", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-89", date:"2026-04-21", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-90", date:"2026-04-22", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-91", date:"2026-04-23", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-92", date:"2026-04-24", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-93", date:"2026-04-25", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-94", date:"2026-04-26", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-95", date:"2026-04-27", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-96", date:"2026-04-28", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-97", date:"2026-04-29", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-98", date:"2026-04-30", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-99", date:"2026-05-01", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-100", date:"2026-05-02", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-101", date:"2026-05-03", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-102", date:"2026-05-04", categorie:"ferme", titre:"Vacances scolaires Zone B — Printemps", responsable:"", horaire:"" },
+  { id:"vac-103", date:"2026-10-17", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-104", date:"2026-10-18", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-105", date:"2026-10-19", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-106", date:"2026-10-20", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-107", date:"2026-10-21", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-108", date:"2026-10-22", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-109", date:"2026-10-23", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-110", date:"2026-10-24", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-111", date:"2026-10-25", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-112", date:"2026-10-26", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-113", date:"2026-10-27", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-114", date:"2026-10-28", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-115", date:"2026-10-29", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-116", date:"2026-10-30", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-117", date:"2026-10-31", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-118", date:"2026-11-01", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-119", date:"2026-11-02", categorie:"ferme", titre:"Vacances scolaires Zone B — Toussaint", responsable:"", horaire:"" },
+  { id:"vac-120", date:"2026-12-19", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-121", date:"2026-12-20", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-122", date:"2026-12-21", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-123", date:"2026-12-22", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-124", date:"2026-12-23", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-125", date:"2026-12-24", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-126", date:"2026-12-25", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-127", date:"2026-12-26", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-128", date:"2026-12-27", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-129", date:"2026-12-28", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-130", date:"2026-12-29", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-131", date:"2026-12-30", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+  { id:"vac-132", date:"2026-12-31", categorie:"ferme", titre:"Vacances scolaires Zone B — Noël", responsable:"", horaire:"" },
+];
+
+const CAT = {
+  spectacle:  { label:"Spectacle",  color:"#C0392B", bg:"#FEF2F2", light:"#FFF5F5" },
+  repetition: { label:"Répétition", color:"#B45309", bg:"#FFFBEB", light:"#FEFCE8" },
+  cours:      { label:"Cours",      color:"#1D4ED8", bg:"#EFF6FF", light:"#F0F9FF" },
+  technique:  { label:"Technique",  color:"#6D28D9", bg:"#F5F3FF", light:"#FAF5FF" },
+  admin:      { label:"Admin",      color:"#047857", bg:"#ECFDF5", light:"#F0FDF4" },
+  annule:     { label:"Annulé",     color:"#9CA3AF", bg:"#F9FAFB", light:"#F9FAFB" },
+  ferme:      { label:"Fermé",      color:"#D1D5DB", bg:"#F9FAFB", light:"#F9FAFB" },
+};
+
+const MONTH_COLORS = [
+  "#374151","#6D28D9","#065F46","#1D4ED8",
+  "#B45309","#047857","#9D174D","#1E40AF",
+  "#7C3AED","#B45309","#1D4ED8","#374151",
+];
+
+const MOIS_FULL  = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const MOIS_SHORT = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const JOURS_GRID = ["L","M","M","J","V","S","D"];
+const JOURS_NOM  = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+
+function parseDate(str) { const [y,m,d]=str.split("-").map(Number); return new Date(y,m-1,d); }
+function getDaysInMonth(y,m) { return new Date(y,m+1,0).getDate(); }
+function getMondayOffset(y,m) { const fd=new Date(y,m,1).getDay(); return fd===0?6:fd-1; }
+function isSameDay(a,b) { return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function uid() { return "u-"+Date.now()+"-"+Math.random().toString(36).slice(2,7); }
+
+const EMPTY_FORM = { date:"", categorie:"spectacle", titre:"", responsable:"", horaire:"" };
+const STORAGE_KEY = "bocal-custom-events-2026"; // gardé pour migration éventuelle
+
+// ── Composant champ de formulaire ──
+function Field({ label, children }) {
+  return (
+    <div>
+      <label style={{ fontSize:11, color:"#555", fontWeight:600, display:"block", marginBottom:4 }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+const inputStyle = { width:"100%", padding:"8px 10px", border:"1px solid #D1D5DB", borderRadius:3, fontSize:13, boxSizing:"border-box", fontFamily:"inherit" };
+
+function App() {
+  const today = new Date(2026, 3, 22);
+
+  const [customEvents,  setCustomEvents]  = useState([]);
+  const [fbReady,       setFbReady]       = useState(false);
+  const [view,          setView]          = useState("panorama");
+  const [filterCat,     setFilterCat]     = useState("all");
+  const [startMonth,    setStartMonth]    = useState(3);
+  const [showForm,      setShowForm]      = useState(false);
+  const [form,          setForm]          = useState(EMPTY_FORM);
+  const [formError,     setFormError]     = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [editingId,     setEditingId]     = useState(null);
+  const [editForm,      setEditForm]      = useState(EMPTY_FORM);
+  const [editError,     setEditError]     = useState("");
+
+  // Firebase — chargement initial + écoute en temps réel
+  useEffect(() => {
+    const ref = db.ref('customEvents');
+    ref.on('value', function(snap) {
+      const val = snap.val();
+      setCustomEvents(val ? Object.values(val) : []);
+      setFbReady(true);
+    });
+    return () => ref.off();
+  }, []);
+
+  const allEvents = useMemo(() => [...EVENTS_BASE, ...customEvents], [customEvents]);
+
+  const months = useMemo(() => [0,1,2].map(offset => {
+    const m=(startMonth+offset)%12;
+    const y=2026+Math.floor((startMonth+offset)/12);
+    const events=allEvents.filter(e=>{const d=parseDate(e.date);return d.getMonth()===m&&d.getFullYear()===y&&(filterCat==="all"||e.categorie===filterCat);});
+    return {m,y,days:getDaysInMonth(y,m),blanks:getMondayOffset(y,m),events};
+  }),[startMonth,filterCat,allEvents]);
+
+  const timeline = useMemo(()=>{
+    const groups={};
+    allEvents
+      .filter(e=>{const d=parseDate(e.date);return d>=today&&(filterCat==="all"||e.categorie===filterCat);})
+      .sort((a,b)=>a.date.localeCompare(b.date))
+      .forEach(e=>{if(!groups[e.date])groups[e.date]=[];groups[e.date].push(e);});
+    return Object.entries(groups);
+  },[filterCat,allEvents]);
+
+  const getDayEvts=(y,m,day,events)=>events.filter(e=>{const d=parseDate(e.date);return d.getDate()===day&&d.getMonth()===m&&d.getFullYear()===y;});
+
+  function handleAdd() {
+    if(!form.date){setFormError("La date est obligatoire.");return;}
+    if(!form.titre.trim()){setFormError("Le titre est obligatoire.");return;}
+    const newEvent = {...form, titre:form.titre.trim(), id:uid()};
+    db.ref('customEvents/' + newEvent.id).set(newEvent);
+    setForm(EMPTY_FORM);setFormError("");setShowForm(false);
+  }
+
+  function handleDelete(id) {
+    db.ref('customEvents/' + id).remove();
+    setDeleteConfirm(null);setEditingId(null);
+  }
+
+  function openEdit(ev) {
+    setEditingId(ev.id);
+    setEditForm({date:ev.date,categorie:ev.categorie,titre:ev.titre,responsable:ev.responsable||"",horaire:ev.horaire||""});
+    setEditError("");
+  }
+
+  function handleSaveEdit() {
+    if(!editForm.date){setEditError("La date est obligatoire.");return;}
+    if(!editForm.titre.trim()){setEditError("Le titre est obligatoire.");return;}
+    db.ref('customEvents/' + editingId).update({...editForm, titre:editForm.titre.trim()});
+    setEditingId(null);setEditError("");
+  }
+
+  const btn = (extra={}) => ({border:"none",cursor:"pointer",fontFamily:"inherit",borderRadius:3,...extra});
+
+  return (
+    <div style={{minHeight:"100vh",background:"#fff"}}>
+
+      {/* ══ HEADER ══ */}
+      <div style={{borderBottom:"2px solid #111",padding:"18px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+        <div>
+          <div style={{fontSize:10,letterSpacing:3,color:"#aaa",textTransform:"uppercase",marginBottom:3}}>Saison 2025–2026 · Théâtre du Bocal · Nice</div>
+          <h1 style={{margin:0,fontSize:24,fontWeight:800,letterSpacing:"-0.5px"}}>
+            Planning annuel <span style={{fontWeight:300,color:"#aaa",fontSize:16}}>2026</span>
+          </h1>
+        </div>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          <div style={{background:"#C0392B",color:"#fff",padding:"6px 14px",borderRadius:3,fontSize:12,fontWeight:600}}>
+            ● Aujourd'hui — {today.getDate()} {MOIS_SHORT[today.getMonth()]} {today.getFullYear()}
+          </div>
+          <button onClick={()=>{setShowForm(v=>!v);setFormError("");}} style={btn({background:showForm?"#111":"#fff",color:showForm?"#fff":"#111",border:"2px solid #111",padding:"6px 16px",fontSize:12,fontWeight:700})}>
+            {showForm?"✕ Fermer":"+ Ajouter un événement"}
+          </button>
+        </div>
+      </div>
+
+      {/* ══ FORMULAIRE AJOUT ══ */}
+      {showForm && (
+        <div style={{background:"#F9FAFB",borderBottom:"2px solid #111",padding:"20px 28px"}}>
+          <div style={{fontSize:11,letterSpacing:2,color:"#888",textTransform:"uppercase",marginBottom:14}}>Nouvel événement</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12}}>
+            <Field label="DATE *">
+              <input type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} style={inputStyle}/>
+            </Field>
+            <Field label="CATÉGORIE *">
+              <select value={form.categorie} onChange={e=>setForm(f=>({...f,categorie:e.target.value}))} style={{...inputStyle,background:"#fff"}}>
+                {Object.entries(CAT).filter(([k])=>k!=="ferme").map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+              </select>
+            </Field>
+            <div style={{gridColumn:"span 2"}}>
+              <Field label="TITRE *">
+                <input type="text" placeholder="ex : Répétition générale Smith & Wesson" value={form.titre} onChange={e=>setForm(f=>({...f,titre:e.target.value}))} style={inputStyle}/>
+              </Field>
+            </div>
+            <Field label="RESPONSABLE">
+              <input type="text" placeholder="ex : Marlène" value={form.responsable} onChange={e=>setForm(f=>({...f,responsable:e.target.value}))} style={inputStyle}/>
+            </Field>
+            <Field label="HORAIRE">
+              <input type="text" placeholder="ex : 18h30" value={form.horaire} onChange={e=>setForm(f=>({...f,horaire:e.target.value}))} style={inputStyle}/>
+            </Field>
+          </div>
+          {formError && <div style={{color:"#C0392B",fontSize:12,marginTop:10}}>⚠ {formError}</div>}
+          <div style={{marginTop:16,display:"flex",gap:10,alignItems:"center"}}>
+            <button onClick={handleAdd} style={btn({background:"#111",color:"#fff",padding:"9px 22px",fontSize:13,fontWeight:700})}>Enregistrer</button>
+            <button onClick={()=>{setShowForm(false);setForm(EMPTY_FORM);setFormError("");}} style={btn({background:"#fff",color:"#555",border:"1px solid #D1D5DB",padding:"9px 16px",fontSize:13})}>Annuler</button>
+            {customEvents.length>0 && <span style={{fontSize:11,color:"#9CA3AF",marginLeft:8}}>✦ {customEvents.length} ajouté{customEvents.length>1?"s":""}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* ══ BARRE CONTRÔLE ══ */}
+      <div style={{padding:"12px 28px",borderBottom:"1px solid #E5E7EB",display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",background:"#FAFAFA"}}>
+        <div style={{display:"flex",border:"1px solid #D1D5DB",borderRadius:4,overflow:"hidden"}}>
+          {[["panorama","Panorama 3 mois"],["timeline","Timeline"]].map(([v,label])=>(
+            <button key={v} onClick={()=>setView(v)} style={btn({borderRadius:0,background:view===v?"#111":"#fff",color:view===v?"#fff":"#555",padding:"7px 16px",fontSize:12,fontWeight:view===v?700:400})}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {view==="panorama" && (
+          <div style={{display:"flex",gap:6,alignItems:"center"}}>
+            <button onClick={()=>setStartMonth(m=>Math.max(0,m-1))} style={btn({background:"#fff",border:"1px solid #D1D5DB",padding:"5px 12px",fontSize:16,color:"#555"})}>‹</button>
+            <span style={{fontSize:12,color:"#555",minWidth:185,textAlign:"center",fontWeight:500}}>
+              {MOIS_FULL[months[0].m]} – {MOIS_FULL[months[2].m]} {months[2].y}
+            </span>
+            <button onClick={()=>setStartMonth(m=>Math.min(9,m+1))} style={btn({background:"#fff",border:"1px solid #D1D5DB",padding:"5px 12px",fontSize:16,color:"#555"})}>›</button>
+          </div>
+        )}
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginLeft:"auto"}}>
+          <button onClick={()=>setFilterCat("all")} style={btn({background:filterCat==="all"?"#111":"#fff",color:filterCat==="all"?"#fff":"#555",border:"1px solid #D1D5DB",padding:"4px 12px",fontSize:11})}>Tout</button>
+          {Object.entries(CAT).filter(([k])=>k!=="ferme").map(([key,val])=>(
+            <button key={key} onClick={()=>setFilterCat(filterCat===key?"all":key)} style={btn({background:filterCat===key?val.color:"#fff",color:filterCat===key?"#fff":val.color,border:`1px solid ${val.color}`,padding:"4px 12px",fontSize:11})}>
+              {val.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ══════════ PANORAMA 3 MOIS ══════════ */}
+      {view==="panorama" && (
+        <div style={{padding:"28px 28px 40px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:28,alignItems:"start"}}>
+            {months.map(({m,y,days,blanks,events},mIdx)=>{
+              const isCurrentMonth=m===today.getMonth()&&y===today.getFullYear();
+              const nonCours=events.filter(e=>e.categorie!=="cours"&&e.categorie!=="ferme");
+              const spectCount=events.filter(e=>e.categorie==="spectacle").length;
+              const MONTH_COLORS_LIST=["#5A9BD5","#4A7FB5","#B5748A","#F2A7BB","#9A7BB6","#C7BA4A","#D4A018","#C1405C","#A0623B","#7B893A","#8A5A80","#A15B20"];
+              const accent=MONTH_COLORS_LIST[m];
+              return (
+                <div key={`${y}-${m}`} style={{border:`2px solid ${accent}`,borderRadius:8,overflow:"hidden",boxShadow:isCurrentMonth?"0 4px 20px rgba(0,0,0,0.10)":"0 1px 4px rgba(0,0,0,0.06)"}}>
+                  {/* Titre mois */}
+                  <div style={{background:accent,padding:"16px 18px 14px",position:"relative"}}>
+                    <div style={{fontSize:11,letterSpacing:3,color:"rgba(255,255,255,0.55)",textTransform:"uppercase",marginBottom:3}}>
+                      {isCurrentMonth?"Mois en cours":mIdx===0?"Mois précédent":`Dans ${mIdx} mois`}
+                    </div>
+                    <div style={{fontSize:30,fontWeight:900,color:"#fff",letterSpacing:"-1px",lineHeight:1}}>{MOIS_FULL[m]}</div>
+                    <div style={{fontSize:16,fontWeight:300,color:"rgba(255,255,255,0.7)",marginTop:2}}>{y}</div>
+                    {spectCount>0 && (
+                      <div style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,0.2)",color:"#fff",borderRadius:4,fontSize:11,fontWeight:700,padding:"4px 10px"}}>
+                        🎭 {spectCount} spectacle{spectCount>1?"s":""}
+                      </div>
+                    )}
+                  </div>
+
+                                    {/* Tous les jours du mois */}
+                  <div>
+                    <div style={{display:"flex",padding:"5px 14px",borderBottom:"1px solid #F3F4F6",background:"#FAFAFA"}}>
+                      <div style={{minWidth:60,fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:1}}>Date</div>
+                      <div style={{flex:1,fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:1}}>Événements</div>
+                    </div>
+                    {Array(days).fill(null).map((_,i)=>{
+                      const day=i+1;
+                      const iso=`${y}-${String(m+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+                      const dow=new Date(y,m,day).getDay();
+                      const dowLabel=["Di","Lu","Ma","Me","Je","Ve","Sa"][dow];
+                      const isToday=isSameDay(new Date(y,m,day),today);
+                      const isWE=dow===0||dow===6;
+                      // Vacances Zone B : détecter si ce jour a un event "ferme" de type vacances
+                      const isVacances=allEvents.some(e=>e.date===iso&&e.categorie==="ferme"&&e.titre&&e.titre.includes("Zone B"));
+                      // Filtrer les cours non maintenus pendant vacances (Pitchoun mercredi 10h et Pré-ado mercredi 14h)
+                      const dayEvtsRaw=allEvents.filter(e=>e.date===iso&&(filterCat==="all"||e.categorie===filterCat));
+                      const dayEvts=dayEvtsRaw.filter(e=>{
+                        if(!isVacances) return true;
+                        if(e.categorie==="ferme") return false; // cacher l'event ferme lui-même
+                        const t=e.titre||"";
+                        // Supprimer Pitchoun et Pré-ado pendant vacances
+                        if(t.includes("Pitchoun")||t.includes("Pré-ado")||t.includes("Pre-ado")) return false;
+                        return true;
+                      });
+                      const hasSpec=dayEvts.some(e=>e.categorie==="spectacle");
+                      const vacBg=isVacances?"#F5F5F3":undefined;
+                      return (
+                        <div key={day} style={{display:"flex",alignItems:"flex-start",padding:"4px 14px",borderBottom:"1px solid #F3F4F6",background:isToday?"#FFF0F0":hasSpec?"#FEF2F2":vacBg||(isWE?"#FAFAFA":"#fff"),minHeight:28,borderLeft:isVacances?"3px solid #D1D5DB":"3px solid transparent",position:"relative"}}>
+                          <div style={{minWidth:60,display:"flex",alignItems:"center",gap:5,paddingTop:3,flexShrink:0}}>
+                            <span style={{fontSize:13,fontWeight:isToday?800:400,color:isToday?"#C0392B":isWE?"#CBD5E1":"#111"}}>{day}</span>
+                            <span style={{fontSize:10,color:isToday?"#C0392B":"#CBD5E1",fontWeight:600}}>{dowLabel}</span>
+                          </div>
+                          <div style={{flex:1,display:"flex",flexDirection:"column",gap:2,paddingTop:3}}>
+                            {dayEvts.map((ev,ei)=>{
+                              const cat=CAT[ev.categorie]||CAT.cours;
+                              const isCustom=ev.id&&ev.id.startsWith("u-");
+                              return (
+                                <div key={ev.id||ei} style={{display:"flex",alignItems:"center",gap:6}}>
+                                  <div style={{width:3,height:13,borderRadius:2,background:cat.color,flexShrink:0}}/>
+                                  <span style={{fontSize:12,fontWeight:ev.categorie==="spectacle"?800:500,color:"#111",textTransform:ev.categorie==="spectacle"?"uppercase":"none"}}>{ev.titre}</span>
+                                  {ev.horaire&&ev.horaire!=="—"&&<span style={{fontSize:10,color:"#9CA3AF"}}>· {ev.horaire}</span>}
+                                  {isCustom&&<button onClick={()=>setDeleteConfirm(ev.id)} style={{background:"transparent",border:"none",color:"#D1D5DB",fontSize:11,cursor:"pointer",padding:"0 2px"}}>✕</button>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <button
+                            onClick={()=>{setForm(f=>({...f,date:iso,categorie:"spectacle"}));setShowForm(true);setFormError("");window.scrollTo({top:0,behavior:"smooth"});}}
+                            style={{background:"transparent",border:"none",color:"#D1D5DB",fontSize:18,cursor:"pointer",padding:"0 4px",lineHeight:1,marginTop:1,flexShrink:0}}
+                            title="Ajouter"
+                          >+</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Légende vacances */}
+          <div style={{display:"flex",alignItems:"center",gap:16,padding:"10px 0",flexWrap:"wrap",borderTop:"1px solid #F3F4F6",marginTop:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{width:4,height:18,background:"#D1D5DB",borderRadius:2}}/>
+              <span style={{fontSize:11,color:"#9CA3AF",fontStyle:"italic"}}>Vacances scolaires Zone B</span>
+            </div>
+            <span style={{fontSize:11,color:"#CBD5E1",fontStyle:"italic"}}>Cours Pitchoun mer. 10h · Pré-ado mer. 14h non maintenus</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════ TIMELINE ══════════ */}
+      {view==="timeline" && (
+        <div style={{padding:"28px 28px 40px",maxWidth:820}}>
+          <div style={{fontSize:10,color:"#9CA3AF",letterSpacing:2,textTransform:"uppercase",marginBottom:24}}>
+            Prochains événements — {timeline.length} dates au programme
+          </div>
+          {timeline.length===0 && <div style={{color:"#9CA3AF",fontStyle:"italic"}}>Aucun événement à venir.</div>}
+          {(()=>{
+            let lastMonthKey=null;
+            const items=[];
+            timeline.forEach(([dateStr,evts])=>{
+              const d=parseDate(dateStr);
+              const monthKey=`${d.getFullYear()}-${d.getMonth()}`;
+              const isNow=isSameDay(d,today);
+              const isPast=d<today;
+              const hasSpect=evts.some(e=>e.categorie==="spectacle");
+              const jourNom=JOURS_NOM[d.getDay()];
+              const monthColor=MONTH_COLORS[d.getMonth()];
+              const isCurrentMonth=d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear();
+
+              if(monthKey!==lastMonthKey){
+                lastMonthKey=monthKey;
+                const spectaclesInMonth=timeline
+                  .filter(([ds])=>{const dd=parseDate(ds);return dd.getMonth()===d.getMonth()&&dd.getFullYear()===d.getFullYear();})
+                  .flatMap(([,ev])=>ev).filter(e=>e.categorie==="spectacle").length;
+                items.push(
+                  <div key={`header-${monthKey}`} style={{display:"flex",alignItems:"stretch",marginBottom:4,marginTop:items.length>0?32:0}}>
+                    <div style={{width:96,minWidth:96}}/>
+                    <div style={{flex:1,marginLeft:16,background:monthColor,borderRadius:6,padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <div>
+                        {isCurrentMonth && <div style={{fontSize:11,letterSpacing:3,color:"rgba(255,255,255,0.55)",textTransform:"uppercase",marginBottom:2}}>Mois en cours</div>}
+                        <div style={{fontSize:28,fontWeight:900,color:"#fff",letterSpacing:"-0.8px",lineHeight:1}}>
+                          {MOIS_FULL[d.getMonth()]}
+                          <span style={{fontSize:16,fontWeight:300,color:"rgba(255,255,255,0.65)",marginLeft:10}}>{d.getFullYear()}</span>
+                        </div>
+                      </div>
+                      {spectaclesInMonth>0 && (
+                        <div style={{background:"rgba(255,255,255,0.18)",color:"#fff",borderRadius:4,fontSize:12,fontWeight:700,padding:"5px 12px"}}>
+                          🎭 {spectaclesInMonth} spectacle{spectaclesInMonth>1?"s":""}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
+              items.push(
+                <div key={dateStr} style={{display:"flex",marginBottom:3,opacity:isPast?0.4:1}}>
+                  <div style={{width:96,minWidth:96,paddingRight:16,paddingTop:9,textAlign:"right",position:"relative",borderRight:`3px solid ${isNow?"#C0392B":hasSpect?"#C0392B44":"#E5E7EB"}`}}>
+                    {isNow && <div style={{position:"absolute",right:-7,top:12,width:11,height:11,borderRadius:"50%",background:"#C0392B",border:"2px solid #fff"}}/>}
+                    <div style={{fontSize:21,fontWeight:800,color:isNow?"#C0392B":"#111",lineHeight:1}}>{d.getDate()}</div>
+                    <div style={{fontSize:10,color:"#9CA3AF",marginTop:2,letterSpacing:"0.5px"}}>{jourNom} {MOIS_SHORT[d.getMonth()]}</div>
+                  </div>
+                  <div style={{paddingLeft:16,paddingTop:6,paddingBottom:6,flex:1,display:"flex",flexDirection:"column",gap:4}}>
+                    {evts.map((ev,ei)=>{
+                      const cat=CAT[ev.categorie]||CAT.cours;
+                      const isSpect=ev.categorie==="spectacle";
+                      const isCustom=ev.id?.startsWith("u-");
+                      return (
+                        <div key={ev.id||ei} style={{background:isSpect?"#FEF2F2":"#F9FAFB",border:`1px solid ${isSpect?"#C0392B33":"#E5E7EB"}`,borderLeft:`3px solid ${cat.color}`,borderRadius:4,padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                          <div>
+                            <div style={{fontSize:13,fontWeight:isSpect?800:500,color:"#111",textTransform:isSpect?"uppercase":"none",letterSpacing:isSpect?"0.4px":"0"}}>{ev.titre}</div>
+                            {ev.responsable && <div style={{fontSize:11,color:"#9CA3AF",marginTop:1}}>{ev.responsable}</div>}
+                          </div>
+                          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                            {ev.horaire&&ev.horaire!=="—" && <span style={{fontSize:11,color:cat.color,fontWeight:700}}>{ev.horaire}</span>}
+                            <span style={{fontSize:10,color:cat.color,border:`1px solid ${cat.color}`,padding:"2px 7px",borderRadius:3,textTransform:"uppercase",letterSpacing:"0.5px"}}>{cat.label}</span>
+                            {isCustom && (
+                              <div style={{display:"flex",gap:4}}>
+                                <button onClick={()=>openEdit(ev)} title="Modifier" style={btn({background:"transparent",color:"#9CA3AF",fontSize:15,padding:"2px 5px"})}>✎</button>
+                                <button onClick={()=>setDeleteConfirm(ev.id)} title="Supprimer" style={btn({background:"transparent",color:"#D1D5DB",fontSize:14,padding:"2px 6px"})}>✕</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            });
+            return items;
+          })()}
+        </div>
+      )}
+
+      {/* ══ MODALE ÉDITION ══ */}
+      {editingId && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}}>
+          <div style={{background:"#fff",borderRadius:8,padding:"28px 32px",width:"100%",maxWidth:520,boxShadow:"0 8px 32px rgba(0,0,0,0.18)"}}>
+            <div style={{fontSize:11,letterSpacing:2,color:"#888",textTransform:"uppercase",marginBottom:14}}>Modifier l'événement</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              <Field label="DATE *">
+                <input type="date" value={editForm.date} onChange={e=>setEditForm(f=>({...f,date:e.target.value}))} style={inputStyle}/>
+              </Field>
+              <Field label="CATÉGORIE *">
+                <select value={editForm.categorie} onChange={e=>setEditForm(f=>({...f,categorie:e.target.value}))} style={{...inputStyle,background:"#fff"}}>
+                  {Object.entries(CAT).filter(([k])=>k!=="ferme").map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+                </select>
+              </Field>
+              <div style={{gridColumn:"span 2"}}>
+                <Field label="TITRE *">
+                  <input type="text" value={editForm.titre} onChange={e=>setEditForm(f=>({...f,titre:e.target.value}))} style={inputStyle}/>
+                </Field>
+              </div>
+              <Field label="RESPONSABLE">
+                <input type="text" value={editForm.responsable} onChange={e=>setEditForm(f=>({...f,responsable:e.target.value}))} style={inputStyle}/>
+              </Field>
+              <Field label="HORAIRE">
+                <input type="text" value={editForm.horaire} onChange={e=>setEditForm(f=>({...f,horaire:e.target.value}))} style={inputStyle}/>
+              </Field>
+            </div>
+            {editError && <div style={{color:"#C0392B",fontSize:12,marginTop:10}}>⚠ {editError}</div>}
+            <div style={{display:"flex",gap:10,marginTop:20,alignItems:"center"}}>
+              <button onClick={handleSaveEdit} style={btn({background:"#111",color:"#fff",padding:"9px 22px",fontSize:13,fontWeight:700})}>Enregistrer</button>
+              <button onClick={()=>{setEditingId(null);setEditError("");}} style={btn({background:"#fff",border:"1px solid #D1D5DB",color:"#555",padding:"9px 16px",fontSize:13})}>Annuler</button>
+              <button onClick={()=>{const id=editingId;setEditingId(null);setDeleteConfirm(id);}} style={btn({background:"transparent",color:"#C0392B",border:"1px solid #C0392B",padding:"9px 16px",fontSize:13,marginLeft:"auto"})}>Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ MODALE SUPPRESSION ══ */}
+      {deleteConfirm && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}}>
+          <div style={{background:"#fff",borderRadius:8,padding:"28px 32px",maxWidth:380,textAlign:"center",boxShadow:"0 8px 32px rgba(0,0,0,0.18)"}}>
+            <div style={{fontSize:16,fontWeight:700,marginBottom:8}}>Supprimer cet événement ?</div>
+            <div style={{fontSize:13,color:"#555",marginBottom:22}}>Cette action est irréversible.</div>
+            <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+              <button onClick={()=>handleDelete(deleteConfirm)} style={btn({background:"#C0392B",color:"#fff",padding:"9px 22px",fontSize:13,fontWeight:700})}>Supprimer</button>
+              <button onClick={()=>setDeleteConfirm(null)} style={btn({background:"#fff",border:"1px solid #D1D5DB",color:"#555",padding:"9px 16px",fontSize:13})}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ LÉGENDE ══ */}
+      <div style={{padding:"14px 28px",borderTop:"1px solid #E5E7EB",display:"flex",gap:16,flexWrap:"wrap",alignItems:"center",background:"#F9FAFB"}}>
+        <span style={{fontSize:10,color:"#9CA3AF",letterSpacing:2,textTransform:"uppercase"}}>Légende</span>
+        {Object.entries(CAT).filter(([k])=>k!=="ferme").map(([key,val])=>(
+          <div key={key} style={{display:"flex",gap:5,alignItems:"center"}}>
+            <div style={{width:9,height:9,borderRadius:2,background:val.color}}/>
+            <span style={{fontSize:11,color:"#6B7280"}}>{val.label}</span>
+          </div>
+        ))}
+        {customEvents.length>0 && (
+          <span style={{fontSize:10,color:"#9CA3AF",marginLeft:"auto",fontStyle:"italic"}}>
+            ✦ {customEvents.length} événement{customEvents.length>1?"s":""} ajouté{customEvents.length>1?"s":""} manuellement
+          </span>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+window._mountPlanningDany = function() { if(document.getElementById("planning-root") && !window._planningMountedDany) { window._planningMountedDany=true; ReactDOM.createRoot(document.getElementById("planning-root")).render(<App/>); } };
+
+
+</script>
+</body>
+</html>
